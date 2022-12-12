@@ -76,7 +76,7 @@ for i = 1:steps
             %Duffing separated
             vLin = v*(2-omega0^2*k^2) - vPrev;
             vNlin = (2-omega0^2*k^2)/(1+(gamma(n)*k^2*v^2/2))*v - (2-omega0^2*k^2)*v;
-            vNext = v*(2-omega0^2*k^2) - v*(2-omega0^2*k^2) - vPrev + (2-omega0^2*k^2)/(1+(gamma(n)*k^2*v^2/2))*v; %vLin + vNlin;
+            vNext = vLin + vNlin;
 
             outLin(j + steps*(i-1),n) = vLin;
             outNlin(j + steps*(i-1),n) = vNlin;
