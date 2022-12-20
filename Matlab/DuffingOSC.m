@@ -9,7 +9,7 @@ close all
 %%%%% Custom Parameters
 SR = 1000;         %sample rate
 k = 1 / SR;
-durSec = 120.1;         %time of simulation (sec)
+durSec = 60;         %time of simulation (sec)
 
 timeSamples = floor(durSec/k);
 timeVec = (0:timeSamples-1)*k;
@@ -27,8 +27,8 @@ if steps == 1
     displacements = -1;
     velocities = -1;
 elseif steps > 1
-    displacements = -1:2/steps:1;          %initial displacement
-    velocities = -1:2/steps:1;           %initial velocity
+    displacements = -10:2/steps:10;          %initial displacement
+    velocities = -10:2/steps:10;           %initial velocity
 else
     disp('negative steps!')
     return
@@ -42,11 +42,9 @@ return
 end
 
 %+++++++++++++++++++++++++++++++++++
-outDO = zeros(steps^2,timeSamples);
-outSHO = zeros(steps^2,timeSamples);
-
-pDO = zeros(steps^2,timeSamples);
-pSHO = zeros(steps^2,timeSamples);
+outDO = zeros((steps^2)*2,timeSamples);
+outSHO = zeros((steps^2)*2,timeSamples);
+outSHOD = zeros((steps^2)*2,timeSamples);
 
 %-- main loop
 for i = 1:steps
@@ -62,16 +60,19 @@ for i = 1:steps
         for n = 1 : timeSamples
             
             %Duffing
+            yNext = x*(2-omega0^2*k^2) - xPrev;
             xNext = x*(2-omega0^2*k^2)/(1+(gamma(n)*k^2*x^2/2)) - xPrev;
-            outDO(j + 5*(i-1),n) = x;
-            pDO(j + 5*(i-1),n) = (xNext - x)/k;
+            outDO(j + steps*(i-1),n) = xNext;
+            outDO(j + steps*(i-1) + steps^2,n) = 0.5*(xNext - xPrev)/k;
+            outSHOD(j + steps*(i-1),n) = yNext;
+            outSHOD(j + steps*(i-1) + steps^2,n) = 0.5*(yNext - xPrev)/k;
             xPrev = x; 
             x = xNext;
             
             %Linear
             vNext = v*(2-omega0^2*k^2) - vPrev;
-            outSHO(j + 5*(i-1),n) = v;
-            pSHO(j + 5*(i-1),n) = (vNext - v)/k;
+            outSHO(j + steps*(i-1),n) = v;
+            outSHO(j + steps*(i-1) + steps^2,n) = 0.5*(vNext - vPrev)/k;
             vPrev = v;
             v = vNext;
         end
@@ -79,26 +80,32 @@ for i = 1:steps
 end
 
 figure(1)
-for i = 1:25
+for i = 1:steps^2
     plot(outDO(i,:));
     hold on
 end
 hold off
 figure(2)
-for i = 1:25
+for i = 1:steps^2
     plot(outSHO(i,:));
     hold on
 end
 hold off
 figure(3)
-for i = 1:25
-    plot(outDO(i,:),pDO(i,:));
+for i = 1:steps^2
+    plot(outDO(i,:),outDO(i + steps^2,:));
     hold on
 end
 hold off
 figure(4)
-for i = 1:25
-    plot(outSHO(i,:),pSHO(i,:));
+for i = 1:steps^2
+    plot(outSHO(i,:),outSHO(i + steps^2,:));
     hold on
 end
 hold off
+
+figure(5)
+for i = 1:steps^2
+    plot(abs(outDO(i,:) - outSHOD(i,:)));
+    hold on
+end
